@@ -1,9 +1,15 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/firebase_options.dart';
 import 'package:todo/ui/login/login_screen.dart';
 import 'package:todo/ui/register/register_screen.dart';
 import 'package:todo/ui/splash/splash_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApplication());
 }
 
@@ -25,7 +31,7 @@ class MyApplication extends StatelessWidget {
             elevation: 0,
             centerTitle: true,
             titleTextStyle:
-                TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       ),
     );
   }
