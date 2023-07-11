@@ -1,9 +1,27 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/ui/components/custom_form_feild.dart';
+import 'package:todo/ui/dialog_utils.dart';
+import 'package:todo/ui/login/login_screen.dart';
+import 'package:todo/validation_utils.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   static const String routeName = 'Register';
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   var formkey = GlobalKey<FormState>();
+
+  var nameController = TextEditingController(text: 'Mohamed Mahmoud');
+
+  var emailController = TextEditingController(text: 'Fouad@gmail.com');
+
+  var passwordController = TextEditingController(text: '12345678');
+
+  var passwordConfirmationController = TextEditingController(text: '12345678');
 
   @override
   Widget build(BuildContext context) {
@@ -30,23 +48,79 @@ class RegisterScreen extends StatelessWidget {
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.3,
                   ),
-                  CustomFormField(label: "Full Name"),
                   CustomFormField(
-                      label: "E-Mail",
-                      keyboardType: TextInputType.emailAddress),
+                    label: "Full Name",
+                    validator: (text) {
+                      if (text == null || text.trim().isEmpty) {
+                        return 'Please enter full name';
+                      }
+                    },
+                    controller: nameController,
+                  ),
                   CustomFormField(
-                      label: "Phone", keyboardType: TextInputType.phone),
-                  CustomFormField(label: "Password", isPassword: true),
-                  CustomFormField(label: "Conferm-Password", isPassword: true),
+                    label: "E-Mail",
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (text) {
+                      if (text == null || text.trim().isEmpty) {
+                        return 'Please enter email';
+                      }
+                      if (!ValidationUtils.isValidEmail(text)) {
+                        return 'Please enter a valid email';
+                      }
+                    },
+                    controller: emailController,
+                  ),
+                  CustomFormField(
+                    label: "Password",
+                    isPassword: true,
+                    validator: (text) {
+                      if (text == null || text.trim().isEmpty) {
+                        return 'Please enter password';
+                      }
+                      if (text!.length < 8) {
+                        return 'password should be at least 8 chars';
+                      }
+                    },
+                    controller: passwordController,
+                  ),
+                  CustomFormField(
+                    label: "Password-Confirmation",
+                    isPassword: true,
+                    validator: (text) {
+                      if (text == null || text.trim().isEmpty) {
+                        return 'Please enter Password-Confirmation';
+                      }
+                      if (passwordController.text != text) {
+                        return "Password doesn't match";
+                      }
+                    },
+                    controller: passwordConfirmationController,
+                  ),
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.02,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
-                    child: Text('Register'),
+                    onPressed: () {
+                      register();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.only(left: 7, right: 7),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [Text('Register'), Icon(Icons.arrow_forward)],
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 8)),
-                  )
+                      backgroundColor: Theme.of(context).primaryColor,
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(
+                            context, LoginScreen.routeName);
+                      },
+                      child: Text('Already have account?'))
                 ],
               ),
             ),
@@ -56,7 +130,40 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  void register() {
-    formkey.currentState?.validate();
+  FirebaseAuth authService = FirebaseAuth.instance;
+
+  void register() async {
+    if (formkey.currentState?.validate() == false) {
+      return;
+    }
+    DialogUtils.showLoadingDialog(context, "Please wait...");
+    try {
+      var result = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      DialogUtils.showMessage(
+          context, 'Successful Regisrtaion' '${result.user?.uid}');
+      DialogUtils.hideDialog(context);
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Something went wrong';
+      if (e.code == 'weak-password') {
+        errorMessage = 'The password provided is too weak.';
+        DialogUtils.hideDialog(context);
+        DialogUtils.showMessage(context, errorMessage, postActionName: 'Ok');
+      } else if (e.code == 'email-already-in-use') {
+        errorMessage = 'The account already exists for that email.';
+        DialogUtils.hideDialog(context);
+        DialogUtils.showMessage(
+          context,
+          errorMessage,
+          postActionName: 'Ok',
+        );
+      }
+    } catch (e) {
+      String errorMessage = 'Something went wrong';
+      DialogUtils.hideDialog(context);
+      DialogUtils.showMessage(context, errorMessage);
+    }
   }
 }
