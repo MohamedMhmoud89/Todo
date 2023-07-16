@@ -28,32 +28,33 @@ class DialogUtils {
       {String? postActionName,
       VoidCallback? postAction,
       String? negActionName,
-      VoidCallback? negAction}) {
+      VoidCallback? negAction,
+      bool dismissible = true}) {
     List<Widget> actions = [];
-    if (postActionName != Null) {
+    if (postActionName != null) {
       actions.add(TextButton(
           onPressed: () {
             Navigator.pop(context);
             postAction?.call();
           },
-          child: Text(postActionName!)));
+          child: Text(postActionName)));
     }
-    if (negActionName != Null) {
+    if (negActionName != null) {
       actions.add(TextButton(
           onPressed: () {
             Navigator.pop(context);
             negAction?.call();
           },
-          child: Text(negActionName!)));
+          child: Text(negActionName)));
     }
     showDialog(
-      context: context,
-      builder: (buildContext) {
-        return AlertDialog(
-          content: Text(message),
-          actions: actions,
-        );
-      },
-    );
+        context: context,
+        builder: (buildContext) {
+          return AlertDialog(
+            content: Text(message),
+            actions: actions,
+          );
+        },
+        barrierDismissible: dismissible);
   }
 }

@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/database/my_database.dart';
 import 'package:todo/ui/components/custom_form_feild.dart';
 import 'package:todo/ui/dialog_utils.dart';
+import 'package:todo/ui/home/home_screen.dart';
 import 'package:todo/ui/register/register_screen.dart';
 import 'package:todo/validation_utils.dart';
 
@@ -116,8 +118,20 @@ class _LoginScreenState extends State<LoginScreen> {
         email: emailController.text,
         password: passwordController.text,
       );
+      var user = await MyDataBase.readUser(result.user?.uid ?? "");
       DialogUtils.hideDialog(context);
-      DialogUtils.showMessage(context, 'Login Successful');
+      if (user == null) {
+        DialogUtils.showMessage(context, "error. can't find user in db");
+      }
+      DialogUtils.showMessage(
+        context,
+        'Login Successful',
+        postActionName: 'Ok',
+        postAction: () {
+          Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+        },
+        dismissible: false,
+      );
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Something went wrong';
       if (e.code == 'user-not-found') {
@@ -125,10 +139,18 @@ class _LoginScreenState extends State<LoginScreen> {
         DialogUtils.hideDialog(context);
         DialogUtils.showMessage(context, errorMessage, postActionName: 'Ok');
       } else if (e.code == 'wrong-password') {
-        errorMessage = 'Wrong password provided for that user.';
+        errorMessage = 'Wrong password.';
         DialogUtils.hideDialog(context);
         DialogUtils.showMessage(context, errorMessage, postActionName: 'Ok');
       }
+    } catch (e) {
+      String errorMessage = 'Something went wrong';
+      errorMessage = 'Something went wrong';
+      DialogUtils.hideDialog(context);
+      DialogUtils.showMessage(context, errorMessage,
+          postActionName: 'Ok', negActionName: 'Try Again', negAction: () {
+        Login();
+      });
     }
   }
 }

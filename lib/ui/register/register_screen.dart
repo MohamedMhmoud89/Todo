@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/database/model/user.dart' as MyUser;
+import 'package:todo/database/my_database.dart';
 import 'package:todo/ui/components/custom_form_feild.dart';
 import 'package:todo/ui/dialog_utils.dart';
 import 'package:todo/ui/login/login_screen.dart';
@@ -142,9 +144,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: emailController.text,
         password: passwordController.text,
       );
-      DialogUtils.showMessage(
-          context, 'Successful Regisrtaion' '${result.user?.uid}');
+      var myUser = MyUser.User(
+        id: result.user?.uid,
+        name: nameController.text,
+        email: emailController.text,
+      );
+      await MyDataBase.addUser(myUser);
       DialogUtils.hideDialog(context);
+      DialogUtils.showMessage(context, 'Register is successful',
+          postActionName: 'Login', postAction: () {
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      });
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Something went wrong';
       if (e.code == 'weak-password') {
@@ -162,6 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       String errorMessage = 'Something went wrong';
+      errorMessage = 'Something went wrong';
       DialogUtils.hideDialog(context);
       DialogUtils.showMessage(context, errorMessage);
     }
