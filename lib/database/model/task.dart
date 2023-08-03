@@ -22,7 +22,7 @@ class Task {
       'desc': desc,
       'title': title,
       'isDone': isDone,
-      'date': dateTime?.microsecondsSinceEpoch,
+      'date': dateTime?.millisecondsSinceEpoch,
     };
   }
 }
