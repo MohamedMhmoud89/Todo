@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todo/providers/auth_provider.dart';
+import 'package:todo/ui/home/add_task_bottom_sheet.dart';
 import 'package:todo/ui/home/settings/settings_tab.dart';
-import 'package:todo/ui/home/todos_list/add_task_bottom_sheet.dart';
 import 'package:todo/ui/home/todos_list/todos_list_tab.dart';
+import 'package:todo/ui/login/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = 'home';
@@ -21,6 +24,20 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
         title: Text('To Do List'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              var authProvider =
+                  Provider.of<AuthProvider>(context, listen: false);
+              authProvider.logout();
+              Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+            },
+            icon: Icon(Icons.logout),
+            hoverColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).primaryColor,

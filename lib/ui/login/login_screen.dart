@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:todo/database/my_database.dart';
+import 'package:todo/providers/auth_provider.dart';
 import 'package:todo/ui/components/custom_form_feild.dart';
 import 'package:todo/ui/dialog_utils.dart';
 import 'package:todo/ui/home/home_screen.dart';
@@ -17,9 +19,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   var formkey = GlobalKey<FormState>();
 
-  var emailController = TextEditingController(text: 'Fouad@gmail.com');
+  var emailController = TextEditingController(text: '');
 
-  var passwordController = TextEditingController(text: '12345678');
+  var passwordController = TextEditingController(text: '');
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
               fit: BoxFit.fill)),
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
           title: Text('Login'),
         ),
         backgroundColor: Colors.transparent,
@@ -121,17 +124,22 @@ class _LoginScreenState extends State<LoginScreen> {
       var user = await MyDataBase.readUser(result.user?.uid ?? "");
       DialogUtils.hideDialog(context);
       if (user == null) {
+        print('noooooooooooo');
         DialogUtils.showMessage(context, "error. can't find user in db");
+        return;
       }
-      DialogUtils.showMessage(
-        context,
-        'Login Successful',
-        postActionName: 'Ok',
-        postAction: () {
-          Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-        },
-        dismissible: false,
-      );
+      var authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.updateUser(user);
+      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      // DialogUtils.showMessage(
+      //   context,
+      //   'Login Successful',
+      //   postActionName: 'Ok',
+      //   postAction: () {
+      //     Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      //   },
+      //   dismissible: false,
+      // );
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Something went wrong';
       if (e.code == 'user-not-found') {

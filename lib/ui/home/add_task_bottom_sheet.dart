@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todo/database/model/task.dart';
+import 'package:todo/database/my_database.dart';
 import 'package:todo/my_date_utils.dart';
+import 'package:todo/providers/auth_provider.dart';
 import 'package:todo/ui/components/custom_form_feild.dart';
+import 'package:todo/ui/dialog_utils.dart';
 
 class AddTaskBottomSheet extends StatefulWidget {
   @override
@@ -64,7 +69,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                   style: Theme.of(context)
                       .textTheme
                       .headlineMedium
-                      ?.copyWith(fontSize: 15)),
+                      ?.copyWith(fontSize: 15, color: Color(0xffA9A9A9))),
             ),
             SizedBox(
               height: 12,
@@ -80,7 +85,9 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                     },
                     child: Text('Add Task'),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        backgroundColor: Color(0xff5D9CEC)),
                   ),
                 ],
               ),
@@ -91,10 +98,24 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
     );
   }
 
-  void addTask() {
+  void addTask() async {
     if (formKey.currentState?.validate() == false) {
       return;
     }
+    //show loading
+    DialogUtils.showLoadingDialog(context, 'Loading...');
+    //add task to db
+    Task task = Task(
+      title: titleController.text,
+      desc: descriptionController.text,
+      dateTime: MyDateUtils.dateOnly(selectedDate),
+    );
+    AuthProvider authProvider =
+        Provider.of<AuthProvider>(context, listen: false);
+
+    await MyDataBase.addTask(authProvider.currentUser?.id ?? "", task);
+    DialogUtils.hideDialog(context);
+    Navigator.pop(context);
   }
 
   var selectedDate = DateTime.now();

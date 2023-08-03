@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:todo/database/model/user.dart' as MyUser;
 import 'package:todo/database/my_database.dart';
+import 'package:todo/providers/auth_provider.dart';
 import 'package:todo/ui/components/custom_form_feild.dart';
 import 'package:todo/ui/dialog_utils.dart';
 import 'package:todo/ui/login/login_screen.dart';
@@ -17,13 +19,13 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   var formkey = GlobalKey<FormState>();
 
-  var nameController = TextEditingController(text: 'Mohamed Mahmoud');
+  var nameController = TextEditingController(text: '');
 
-  var emailController = TextEditingController(text: 'Fouad@gmail.com');
+  var emailController = TextEditingController(text: '');
 
-  var passwordController = TextEditingController(text: '12345678');
+  var passwordController = TextEditingController(text: '');
 
-  var passwordConfirmationController = TextEditingController(text: '12345678');
+  var passwordConfirmationController = TextEditingController(text: '');
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               fit: BoxFit.fill)),
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
           title: Text('Create Account'),
         ),
         backgroundColor: Colors.transparent,
@@ -150,6 +153,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: emailController.text,
       );
       await MyDataBase.addUser(myUser);
+      var authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.updateUser(myUser);
       DialogUtils.hideDialog(context);
       DialogUtils.showMessage(context, 'Register is successful',
           postActionName: 'Login', postAction: () {
